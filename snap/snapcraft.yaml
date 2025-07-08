@@ -1,5 +1,5 @@
-name: hello
-base: core22
+name: javier-hello
+base: core24
 version: '2.10'
 summary: GNU Hello, the "hello world" snap
 description: |
@@ -7,11 +7,36 @@ description: |
 grade: devel
 confinement: devmode
 
+platforms:
+  arm64:
+    build-on: [amd64, arm64]
+    build-for: arm64
+
 apps:
   hello:
-    command: usr/local/bin/hello
+    command: usr/bin/hello
 
 parts:
   gnu-hello:
     source: http://ftp.gnu.org/gnu/hello/hello-2.10.tar.gz
     plugin: autotools
+    autotools-configure-parameters:
+      - --prefix=/usr
+      - --host=$CRAFT_ARCH_TRIPLET_BUILD_FOR
+    build-packages:
+      - pkg-config
+      - gcc-$CRAFT_ARCH_TRIPLET_BUILD_FOR
+      - libc6-dev-$CRAFT_ARCH_BUILD_FOR-cross
+
+package-repositories:
+  - type: apt
+    architectures: [$CRAFT_ARCH_BUILD_FOR]
+    formats: [deb, deb-src]
+    components: [main]
+    suites: [noble, noble-updates, noble-backports]
+    key-id: F6ECB3762474EDA9D21B7022871920D1991BC93C
+    url: http://ports.ubuntu.com/ubuntu-ports
+
+lint:
+  ignore:
+    - library
